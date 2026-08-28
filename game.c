@@ -15,7 +15,7 @@ int main() {
     ENetHost *client = enet_host_create(NULL, 1, 2, 0, 0);
 
     ENetAddress endereco;
-    endereco.host = inet_addr("127.0.0.1"); // IP do servidor
+    enet_address_set_host(&endereco, "127.0.0.1"); // IP do servidor
     endereco.port = 12345; // Porta do servidor
 
     ENetPeer *conexao = NULL;
@@ -28,14 +28,18 @@ int main() {
             if (connectEvent.type == ENET_EVENT_TYPE_CONNECT) {
                 printf("Conectado ao servidor!\n");
                 conectado = true;
+                break;
             }
         }
-
-        if (!conectado) printf("Não foi possivel se conectar ao servidor.");
     }
 
-    ENetPacket *HelloPacket = enet_packet_create("Hello World!", strlen("Hello World!") + 1, ENET_PACKET_FLAG_RELIABLE);
-    enet_peer_send(conexao, 0, HelloPacket);
+    if (!conectado) {printf("Não foi possivel se conectar ao servidor."); return 1;}
+    char name[21] = "Modulescript";
+    char name_weld[31];
+    snprintf(name_weld, sizeof(name_weld), "SETNAME|%s", name);
+
+    ENetPacket *SetNamePacket = enet_packet_create(name_weld, strlen(name_weld) + 1, ENET_PACKET_FLAG_RELIABLE);
+    enet_peer_send(conexao, 0, SetNamePacket);
     enet_host_flush(client);
 
     ENetEvent serverResponse;
@@ -46,11 +50,12 @@ int main() {
                 char *stringResponse = (char*)serverResponse.packet->data;
 
                 printf("Recebi: %s", stringResponse);
+                enet_packet_destroy(serverResponse.packet);
             }
-            enet_packet_destroy(serverResponse.packet);
         }
     }
  
+    enet_host_destroy(client);
     enet_deinitialize(); // Enet Desinicializa!
     printf("Enet desinicializou!\n");
 
