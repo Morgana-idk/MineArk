@@ -5,8 +5,8 @@ CFLAGS = -Wall -g -lenet
 
 all:main
 
-main:server.c
-	make clean && $(CC) $(CFLAGS) server.c -o server && clear && ./server
+main:server.c ../sharedLibs/player/player.c ../sharedLibs/strings/strings.c
+	make clean && $(CC) $(CFLAGS) server.c ../sharedLibs/player/player.c ../sharedLibs/strings/strings.c -o server && clear && ./server
 
 
 clean:
