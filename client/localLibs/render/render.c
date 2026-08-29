@@ -10,6 +10,9 @@ Vector3 newVector3(float x, float y, float z) {
 void startRender(ClientState *clientStateX) {
     ClientState *clientState = (ClientState*)clientStateX;
 
+    InitWindow(480, 450, "MineArk - 0.2.0");
+    SetTargetFPS(60);
+
     Camera3D camera = {0};
     camera.position = newVector3(0, 0, 0);
     camera.fovy = 90.0f;
@@ -21,6 +24,7 @@ void startRender(ClientState *clientStateX) {
         UpdateCamera(&camera, CAMERA_FREE);
 
         BeginMode3D(camera);
+        ClearBackground(WHITE);
 
         DrawGrid(50, 1);
 
