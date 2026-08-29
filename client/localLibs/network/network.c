@@ -9,9 +9,9 @@
 
 
 
-void network(void *ClientStateX) {
+void *network(void *ClientStateX) {
     ClientState *clientState = (ClientState*)ClientStateX;
-    if (enet_initialize() != 0) {printf("Não foi possivel inicializar o Enet."); return 1;}
+    if (enet_initialize() != 0) {printf("Não foi possivel inicializar o Enet."); return NULL;}
     // Enet Inicializa!
 
     printf("Enet inicializou!\n");
@@ -37,7 +37,7 @@ void network(void *ClientStateX) {
         }
     }
 
-    if (!clientState->conectado) {printf("Não foi possivel se conectar ao servidor."); return 1;}
+    if (!clientState->conectado) {printf("Não foi possivel se conectar ao servidor."); return NULL;}
     char name[21] = "Modulescript";
     char name_weld[31];
     snprintf(name_weld, sizeof(name_weld), "JOIN|%s", name);
@@ -49,6 +49,10 @@ void network(void *ClientStateX) {
     ENetEvent serverResponse;
 
     while (1) {
+        if (!clientState->conectado) {
+            enet_peer_disconnect_now(client->peers, 0);
+        }
+
         if (clientState->playerCarregado) {
             if (client->peers != NULL && client->peers->data != NULL) {
                 Player *peerPlayer = (Player*)client->peers->data;
