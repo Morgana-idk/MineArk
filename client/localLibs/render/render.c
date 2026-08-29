@@ -14,22 +14,41 @@ void startRender(ClientState *clientStateX) {
     SetTargetFPS(60);
 
     Camera3D camera = {0};
-    camera.position = newVector3(0, 0, 0);
+    camera.position = newVector3(0, 1, 0);
     camera.fovy = 90.0f;
     camera.up = newVector3(0, 1, 0);
-    camera.target = newVector3(0, 0, 1);
-    camera.projection = CAMERA_FREE;
+    camera.target = newVector3(0, 1, 0.5f);
+    camera.projection = CAMERA_PERSPECTIVE;
+
+    Mesh cubeMesh = GenMeshCube(1, 1, 1);
+    Model cubeModel = LoadModelFromMesh(cubeMesh);
+
+    DisableCursor();
+
+    SetExitKey(KEY_NULL);
 
     while (!WindowShouldClose()) {
         UpdateCamera(&camera, CAMERA_FREE);
 
-        BeginMode3D(camera);
+        BeginDrawing(); // DRAWING
         ClearBackground(WHITE);
 
-        DrawGrid(50, 1);
 
-        EndMode3D();
+        BeginMode3D(camera); // 3D
+
+        DrawGrid(50, 1);
+        DrawModel(cubeModel, newVector3(.5f, .5f, .5f), 1, BLACK);
+
+        EndMode3D(); // !3D
+        
+        
+        EndDrawing(); // !DRAWING
     }
+
+    UnloadMesh(cubeMesh);
+    UnloadModel(cubeModel);
+
+    CloseWindow();
 }
 
 
