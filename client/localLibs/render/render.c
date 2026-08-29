@@ -2,13 +2,15 @@
 #include <stdio.h>
 #include "../../../otherLibs/raygui.h"
 #include "../../../sharedLibs/clientState.h"
+#include "../../../sharedLibs/player/player.h"
+
+#define print printf
 
 Vector3 newVector3(float x, float y, float z) {
     return (Vector3){(float)x, (float)y, (float)z};
 }
 
 void startRender(ClientState *clientStateX) {
-    ClientState *clientState = (ClientState*)clientStateX;
 
     InitWindow(480, 450, "MineArk - 0.2.0");
     SetTargetFPS(60);

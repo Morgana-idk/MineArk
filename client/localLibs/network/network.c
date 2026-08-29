@@ -7,14 +7,15 @@
 #include "../../../sharedLibs/player/player.h"
 #include "../../../sharedLibs/clientState.h"
 
+#define print printf
 
 
 void *network(void *ClientStateX) {
     ClientState *clientState = (ClientState*)ClientStateX;
-    if (enet_initialize() != 0) {printf("Não foi possivel inicializar o Enet."); return NULL;}
+    if (enet_initialize() != 0) {print("Não foi possivel inicializar o Enet."); return NULL;}
     // Enet Inicializa!
 
-    printf("Enet inicializou!\n");
+    print("Enet inicializou!\n");
 
     ENetHost *client = enet_host_create(NULL, 1, 2, 0, 0);
 
@@ -30,14 +31,14 @@ void *network(void *ClientStateX) {
 
         while (enet_host_service(client, &connectEvent, 5000) > 0) {
             if (connectEvent.type == ENET_EVENT_TYPE_CONNECT) {
-                printf("Conectado ao servidor!\n");
+                print("Conectado ao servidor!\n");
                 clientState->conectado = true;
                 break;
             }
         }
     }
 
-    if (!clientState->conectado) {printf("Não foi possivel se conectar ao servidor."); return NULL;}
+    if (!clientState->conectado) {print("Não foi possivel se conectar ao servidor."); return NULL;}
     char name[21] = "Modulescript";
     char name_weld[31];
     snprintf(name_weld, sizeof(name_weld), "JOIN|%s", name);
@@ -64,7 +65,7 @@ void *network(void *ClientStateX) {
             if (serverResponse.type == ENET_EVENT_TYPE_RECEIVE) {
                 char *stringResponse = (char*)serverResponse.packet->data;
 
-                printf("Recebi: %s", stringResponse);
+                print("Recebi: %s", stringResponse);
 
                 if (strncmp(stringResponse, "JOINSUCESS|", 11) == 0) {
                     if (client->peers != NULL) {
@@ -81,15 +82,6 @@ void *network(void *ClientStateX) {
                 enet_packet_destroy(serverResponse.packet);
             }
         }
-        if (clientState->playerCarregado) {
-            system("clear");
-            printf("\n------VOCÊ-----\n");
-            printf("Nome: %s\n", clientState->clientPlayer.name);
-            printf("\nPosição: {\n    X: %.2f,\n    Y: %.2f,\n    Z: %.2f\n}\n\n", clientState->clientPlayer.position.x, clientState->clientPlayer.position.y, clientState->clientPlayer.position.z);
-            printf("Vida: %.2f\n", clientState->clientPlayer.health);
-            printf("Yaw: %.2f | Pitch: %.2f\n", clientState->clientPlayer.yaw, clientState->clientPlayer.pitch);
-            printf("-----------------\n");
-        }
 
         if (&clientState->clientPlayer != NULL && client->peers != NULL) {
             client->peers->data = &clientState->clientPlayer;
@@ -98,7 +90,7 @@ void *network(void *ClientStateX) {
  
     enet_host_destroy(client);
     enet_deinitialize(); // Enet Desinicializa!
-    printf("Enet desinicializou!\n");
+    print("Enet desinicializou!\n");
 
     return NULL;
 }

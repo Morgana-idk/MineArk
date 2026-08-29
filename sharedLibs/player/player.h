@@ -5,6 +5,26 @@
 
 typedef struct {
     Vector3 position;
+    Vector3 pivot;
+    float rotation;
+} NormalMember;
+
+typedef struct {
+    NormalMember head;
+
+    NormalMember leftArm;
+    NormalMember rightArm;
+    
+    NormalMember leftLeg;
+    NormalMember rightLeg;
+} Torso;
+
+typedef struct {
+    Torso torso;
+} PlayerModel;
+
+typedef struct {
+    Vector3 position;
     Vector3 velocity;
 
     float yaw;
