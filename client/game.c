@@ -2,10 +2,10 @@
 #include "../sharedLibs/player/player.h"
 #include "../sharedLibs/strings/strings.h"
 #include "../sharedLibs/clientState.h"
+#include "../sharedLibs/render/render.h"
 
 // Locals
 #include "localLibs/network/network.h"
-#include "localLibs/render/render.h"
 
 // Externals
 #include <unistd.h>
@@ -13,10 +13,12 @@
 #include <stdio.h>
 
 int main() {
-    ClientState clientState = {false, false, {0}, false};
+    Player *player = buildPlayer();
+    ClientState clientState = {false, false, *player, false, {0}};
 
     networkStart(&clientState);
     startRender(&clientState);
 
+    free(player);
     return 0;
 }

@@ -7,6 +7,7 @@ typedef struct {
     Vector3 position;
     Vector3 pivot;
     float rotation;
+    Vector3 size;
 } NormalMember;
 
 typedef struct {
@@ -17,6 +18,11 @@ typedef struct {
     
     NormalMember leftLeg;
     NormalMember rightLeg;
+
+    Vector3 position;
+    Vector3 pivot;
+    float rotation;
+    Vector3 size;
 } Torso;
 
 typedef struct {
@@ -32,7 +38,14 @@ typedef struct {
 
     float health;
     char name[21];
+
+    PlayerModel playerModel;
 } Player;
+
+typedef struct {
+    Player *player;
+    int size;
+} PlayerList;
 
 void PlayerDesmontarPlayer(Player *destino, char *string);
 Player *buildPlayer();

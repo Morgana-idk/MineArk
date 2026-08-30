@@ -1,13 +1,18 @@
 #include <stdio.h>
 #include <enet/enet.h>
 #include <raylib.h>
+#include <raymath.h>
 #include <string.h>
 #include "../sharedLibs/player/player.h"
 #include "../sharedLibs/strings/strings.h"
+#include "../sharedLibs/render/render.h"
+#include "../sharedLibs/worldGeneration/generation.h"
+#include "../sharedLibs/packets/packets.h"
 
 char ultimoLog[2048] = "\0";
 int connectedClients = 0;
-
+PlayerList playerList = {0};
+World serverWorld = {0};
 
 int main() {
     if (enet_initialize() != 0) {printf("Não foi possivel inicializar o Enet."); return 1;}
@@ -22,6 +27,17 @@ int main() {
         printf("Não foi possível criar o servidor.\n");
         return 1;
     }
+
+    playerList.player = calloc(32, sizeof(Player));
+    playerList.size = 0;
+
+    serverWorld.chunks = calloc(50, sizeof(Chunk));
+    serverWorld.size = 0;
+
+    Chunk basicChunk = generateChunk(newVector3(0, 0, 0), serverWorld.size);
+    serverWorld.chunks[serverWorld.size] = basicChunk;
+    serverWorld.size++;
+
     snprintf(ultimoLog, sizeof(ultimoLog), "Servidor criado com sucesso!");
 
     ENetEvent clientResponse;
@@ -38,7 +54,7 @@ int main() {
                     snprintf(ultimoLog, sizeof(ultimoLog), "Recebi: %s", stringResponse);
 
                     if (strncmp(stringResponse, "JOIN|", 5) == 0) {
-                        if (clientResponse.peer->data == NULL && connectedClients < 32) {
+                        if (clientResponse.peer->data == NULL && playerList.size < 32) {
                             snprintf(ultimoLog, sizeof(ultimoLog), "Cliente pediu novo Player!");
 
                             char *token = strtok(strdup(stringResponse), "|");
@@ -52,19 +68,20 @@ int main() {
                                 if (name != NULL) {
                                     snprintf(newPlayer->name, sizeof(newPlayer->name), "%s", name);
                                 }
+                                clientResponse.peer->data = name;
+                                playerList.player[playerList.size] = *newPlayer;
+                                playerList.size++;
 
-                                clientResponse.peer->data = newPlayer;
+                                PlayerPacket JOINSUCESS_PPacket = {*newPlayer, "JOINSUCESS|"};
 
-                                char newPlayerSerial[1024];
-                                stringMontarPlayer(*newPlayer, newPlayerSerial, 1024, "JOINSUCESS");
-
-                                if (newPlayerSerial) {
-                                    ENetPacket *sucessJoin = enet_packet_create(newPlayerSerial, strlen(newPlayerSerial) + 1, ENET_PACKET_FLAG_RELIABLE);
-                                    if (sucessJoin != NULL) {
-                                        enet_peer_send(clientResponse.peer, 0, sucessJoin);
-                                        enet_host_flush(server);
-                                    }
+                                ENetPacket *sucessJoin = enet_packet_create(&JOINSUCESS_PPacket, sizeof(PlayerPacket), ENET_PACKET_FLAG_RELIABLE);
+                                ENetPacket *worldPacket = enet_packet_create(&serverWorld, sizeof(World), ENET_PACKET_FLAG_RELIABLE);
+                                if (sucessJoin != NULL && worldPacket != NULL) {
+                                    enet_peer_send(clientResponse.peer, 0, sucessJoin);
+                                    enet_peer_send(clientResponse.peer, 0, worldPacket);
+                                    enet_host_flush(server);
                                 }
+                                
                             }
                         }
                     }
@@ -73,42 +90,33 @@ int main() {
                     break;
                 }
                 case ENET_EVENT_TYPE_DISCONNECT:
-                    if (clientResponse.peer->data != NULL) {
-                        free(clientResponse.peer->data);
-                        clientResponse.peer->data = NULL;
+                    for (size_t i = 0; i < playerList.size; i++) {
+                        if (strcmp(playerList.player[i].name, clientResponse.peer->data) == 0) {
+                            playerList.player[i] = playerList.player[playerList.size - 1];
+                            playerList.player[playerList.size - 1].velocity = newVector3(-84848484, -848484, -8484);
+                            playerList.size--;
+                            break;
+                        }
                     }
-
+                    clientResponse.peer->data = NULL;
+                    
                     snprintf(ultimoLog, sizeof(ultimoLog), "Cliente desconectou!");
                     break;
                 case ENET_EVENT_TYPE_NONE:
                     break;
             }
         }
-
-        connectedClients = 0;
-        for (size_t i = 0; i < server->peerCount; i++) {
-            if (server->peers[i].state == ENET_PEER_STATE_CONNECTED) {
-                connectedClients++;
-            }
-        }
         
         system("clear");
         printf("-----CLIENTES-----\n");
-        printf("|QUANTIDADE: %d|\n", connectedClients);
+        printf("|QUANTIDADE: %d|\n", playerList.size);
 
-        if (connectedClients <= 0) {
+        if (playerList.size <= 0) {
             printf("\nNENHUM CLIENTE CONECTADO.\n\n");
         } else {
-            for (size_t i = 0; i < server->peerCount; i++) {
-                if (server->peers[i].state == ENET_PEER_STATE_CONNECTED) {
-                    Player *peerPlayer = (Player*)server->peers[i].data;
-
-                    if (peerPlayer != NULL) {
-                        printf("|--: %s\n", peerPlayer->name);
-                    } else {
-                        printf("|--: [INVÁLIDO]\n");
-                    }
-                }
+            for (size_t i = 0; i < playerList.size; i++) {
+                if (Vector3Equals(playerList.player[i].velocity, newVector3(-84848484, -848484, -8484)) > 0) continue;
+                printf("|--: %s\n", playerList.player[i].name);    
             }
         }
 

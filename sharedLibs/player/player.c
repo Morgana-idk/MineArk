@@ -1,9 +1,12 @@
-#include "player.h"
-#include <string.h>
 #include "../strings/strings.h"
+#include "../render/render.h"
+
 #include <raylib.h>
+#include "raymath.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "player.h"
+#include <string.h>
 
 void PlayerDesmontarPlayer(Player *destino, char *string) {
     fraseSep stringSeparada = separarStrings("|", string, 4);
@@ -35,15 +38,69 @@ void PlayerDesmontarPlayer(Player *destino, char *string) {
 Player *buildPlayer() {
     Player *player = calloc(1, sizeof(Player));
 
+    Vector3 torsoPos = newVector3(0, 1.125f, 0);
+
+    player->position = newVector3(0, 0, 0);
+    player->velocity = newVector3(0, 0, 0);
+    player->yaw = 0;
+    player->pitch = 1;
+    player->health = 20;
+
+    NormalMember head = {
+        Vector3Add(torsoPos, newVector3(0.0f, 0.625f, 0.0f)),
+        Vector3Add(torsoPos, newVector3(0, 0.375f, 0)),
+        0,
+        newVector3(0.5f, 0.5f, 0.5f)
+    };
+
+    NormalMember leftArm = {
+        Vector3Add(torsoPos, newVector3(0.375f, 0.0f, 0.0f)),
+        Vector3Add(torsoPos, newVector3(0.375f, 0.3125f, 0.0f)),
+        0,
+        newVector3(0.25f, 0.75f, 0.25f)
+    };
+
+    NormalMember rightArm = {
+        Vector3Add(torsoPos, newVector3(-0.375f, 0.0f, 0.0f)),
+        Vector3Add(torsoPos, newVector3(-0.375f, 0.3125f, 0.0f)),
+        0,
+        newVector3(0.25f, 0.75f, 0.25f)
+    };
+
+    NormalMember leftLeg = {
+        Vector3Add(torsoPos, newVector3(0.125f, -0.75f, 0.0f)),
+        Vector3Add(torsoPos, newVector3(0.125f, -0.375f, 0.0f)),
+        0,
+        newVector3(0.25f, 0.75f, 0.25f)
+    };
+
+    NormalMember rightLeg = {
+        Vector3Add(torsoPos, newVector3(-0.125f, -0.75f, 0.0f)),
+        Vector3Add(torsoPos, newVector3(-0.125f, -0.375f, 0.0f)),
+        0,
+        newVector3(0.25f, 0.75f, 0.25f)
+    };
+
+    Torso torso = {
+        head,
+        leftArm, rightArm,
+        leftLeg, rightLeg,
+
+        torsoPos,
+        Vector3Add(player->position, newVector3(0, 0.75f, 0)),
+        0,
+        newVector3(0.5f, 0.75f, 0.26f)
+    };
+
+    PlayerModel playerModel = {
+        torso
+    };
+
+    player->playerModel = playerModel;
+
     if (player == NULL) return NULL;
 
-    player->position = (Vector3){0.0f, 0.0f, 0.0f};
-    player->velocity = (Vector3){0.0f, 0.0f, 0.0f};
-    player->yaw = 0.0f;
-    player->pitch = 1.0f;
-    player->health = 20.0f;
-
-    sprintf(player->name, "GuestN");
+    sprintf(player->name, "%s", "GuestN");
 
     return player;
 }
@@ -55,4 +112,6 @@ void *stringMontarPlayer(Player player, char *destino, int size, char *params) {
         player.yaw, player.pitch, player.health,
         player.name
     );
+
+    return NULL;
 }

@@ -3,9 +3,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <raylib.h>
+
 #include "../../../sharedLibs/strings/strings.h"
 #include "../../../sharedLibs/player/player.h"
 #include "../../../sharedLibs/clientState.h"
+#include "../../../sharedLibs/worldGeneration/generation.h"
+#include "../../../sharedLibs/packets/packets.h"
 
 #define print printf
 
@@ -15,7 +18,6 @@ void *network(void *ClientStateX) {
     if (enet_initialize() != 0) {print("Não foi possivel inicializar o Enet."); return NULL;}
     // Enet Inicializa!
 
-    print("Enet inicializou!\n");
 
     ENetHost *client = enet_host_create(NULL, 1, 2, 0, 0);
 
@@ -54,43 +56,36 @@ void *network(void *ClientStateX) {
             enet_peer_disconnect_now(client->peers, 0);
         }
 
-        if (clientState->playerCarregado) {
-            if (client->peers != NULL && client->peers->data != NULL) {
-                Player *peerPlayer = (Player*)client->peers->data;
-                clientState->clientPlayer = *peerPlayer;
-            }
-        }
-
         while (enet_host_service(client, &serverResponse, 16) > 0) {
             if (serverResponse.type == ENET_EVENT_TYPE_RECEIVE) {
-                char *stringResponse = (char*)serverResponse.packet->data;
 
-                print("Recebi: %s", stringResponse);
+                if (serverResponse.packet->dataLength == sizeof(PlayerPacket)) {
+                    PlayerPacket *pPacket = (PlayerPacket*)serverResponse.packet->data;
+                    if (strncmp(pPacket->packet, "JOINSUCESS|", 11) == 0) {
+                        if (&pPacket->player != NULL) {
+                            clientState->clientPlayer = pPacket->player;
 
-                if (strncmp(stringResponse, "JOINSUCESS|", 11) == 0) {
-                    if (client->peers != NULL) {
-                        Player *playerDesmontado = calloc(1, sizeof(Player));
-                        PlayerDesmontarPlayer(playerDesmontado, stringResponse);
+                            clientState->playerCarregado = true;
+                        }
+                    }
 
-                        clientState->clientPlayer = *playerDesmontado;
-                        free(playerDesmontado);
+                }
 
-                        clientState->playerCarregado = true;
+                if (serverResponse.packet->dataLength == sizeof(World)) {
+                    World *world = (World*)serverResponse.packet->data;
+
+                    if (world != NULL) {
+                        clientState->clientWorld = *world;
                     }
                 }
 
                 enet_packet_destroy(serverResponse.packet);
             }
         }
-
-        if (&clientState->clientPlayer != NULL && client->peers != NULL) {
-            client->peers->data = &clientState->clientPlayer;
-        }
     }
  
     enet_host_destroy(client);
     enet_deinitialize(); // Enet Desinicializa!
-    print("Enet desinicializou!\n");
 
     return NULL;
 }

@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -g -DRAYGUI_IMPLEMENTATION
-LDFLAGS = -w -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -lenet -lncurses
-LIBS = ../sharedLibs/player/player.c ../sharedLibs/strings/strings.c localLibs/network/network.c localLibs/render/render.c
+SLIBS = ../sharedLibs
+LIBS = $(SLIBS)/player/player.c $(SLIBS)/strings/strings.c $(SLIBS)/render/render.c $(SLIBS)/worldGeneration/generation.c localLibs/network/network.c
 
 .PHONY: all clean
 
