@@ -75,13 +75,27 @@ int main() {
                                 PlayerPacket JOINSUCESS_PPacket = {*newPlayer, "JOINSUCESS|"};
 
                                 ENetPacket *sucessJoin = enet_packet_create(&JOINSUCESS_PPacket, sizeof(PlayerPacket), ENET_PACKET_FLAG_RELIABLE);
-                                ENetPacket *worldPacket = enet_packet_create(&serverWorld, sizeof(World), ENET_PACKET_FLAG_RELIABLE);
-                                if (sucessJoin != NULL && worldPacket != NULL) {
+                                if (sucessJoin != NULL) {
                                     enet_peer_send(clientResponse.peer, 0, sucessJoin);
-                                    enet_peer_send(clientResponse.peer, 0, worldPacket);
+
+                                    for (int i = 0; i < serverWorld.size; i++) {
+                                        Chunk c = serverWorld.chunks[i];
+                                        ChunkPacket allocChunkPacket = {c, "ALLOC|"};
+
+                                        ENetPacket *allocPacket = enet_packet_create(&allocChunkPacket, sizeof(ChunkPacket), ENET_PACKET_FLAG_RELIABLE);
+                                        enet_peer_send(clientResponse.peer, 0, allocPacket);
+
+                                        for (int j = 0; j < serverWorld.chunks[i].blocks_size; j++) {
+                                            Block b = serverWorld.chunks[i].blocks[j];
+                                            BlockPacket addBlockPacket = {b, "ADD|"};
+
+                                            ENetPacket *addPacket = enet_packet_create(&addBlockPacket, sizeof(BlockPacket), ENET_PACKET_FLAG_RELIABLE);
+                                            enet_peer_send(clientResponse.peer, 0, addPacket);
+                                        }
+                                    }
+
                                     enet_host_flush(server);
                                 }
-                                
                             }
                         }
                     }

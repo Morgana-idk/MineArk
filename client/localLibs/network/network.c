@@ -71,11 +71,24 @@ void *network(void *ClientStateX) {
 
                 }
 
-                if (serverResponse.packet->dataLength == sizeof(World)) {
-                    World *world = (World*)serverResponse.packet->data;
+                if (serverResponse.packet->dataLength == sizeof(ChunkPacket)) {
+                    ChunkPacket *chunkPacket = (ChunkPacket*)serverResponse.packet->data;
+                    if (strncmp(chunkPacket->packet, "ALLOC|", 6) == 0) {
+                        if (&chunkPacket->chunk != NULL) {
+                            clientState->clientWorld.chunks[chunkPacket->chunk.id] = chunkPacket->chunk;
+                            clientState->clientWorld.chunks[chunkPacket->chunk.id].blocks == calloc(1024, sizeof(Block));
+                            clientState->clientWorld.size++;
+                        }
+                    }
+                }
 
-                    if (world != NULL) {
-                        clientState->clientWorld = *world;
+                if (serverResponse.packet->dataLength == sizeof(BlockPacket)) {
+                    BlockPacket *blockPacket = (BlockPacket*)serverResponse.packet->data;
+                    if (strncmp(blockPacket->packet, "ADD|", 4) == 0) {
+                        if (&blockPacket->block != NULL) {
+                            clientState->clientWorld.chunks[blockPacket->block.chunkMom].blocks[clientState->clientWorld.chunks[blockPacket->block.chunkMom].blocks_size] = blockPacket->block;
+                            clientState->clientWorld.chunks[blockPacket->block.chunkMom].blocks_size++;
+                        }
                     }
                 }
 

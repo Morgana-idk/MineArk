@@ -6,6 +6,7 @@ typedef struct {
     Vector3 position;
     Vector3 size;
     int type;
+    int chunkMom;
 } Block;
 
 typedef struct {
@@ -19,7 +20,7 @@ typedef struct {
     int size;
 } World;
 
-Block buildBlock(Vector3 position, Vector3 size, int type);
+Block buildBlock(Vector3 position, Vector3 size, int type, int chunkMom);
 Chunk generateChunk(Vector3 position, int id);
 
 #endif

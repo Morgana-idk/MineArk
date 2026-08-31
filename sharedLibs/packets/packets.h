@@ -9,6 +9,11 @@ typedef struct {
 } PlayerPacket;
 
 typedef struct {
+    Block block;
+    char packet[1048];
+} BlockPacket;
+
+typedef struct {
     Chunk chunk;
     char packet[1048];
 } ChunkPacket;
