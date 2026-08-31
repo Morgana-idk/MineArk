@@ -80,6 +80,7 @@ int main() {
 
                                     for (int i = 0; i < serverWorld.size; i++) {
                                         Chunk c = serverWorld.chunks[i];
+                                        c.blocks = NULL;
                                         ChunkPacket allocChunkPacket = {c, "ALLOC|"};
 
                                         ENetPacket *allocPacket = enet_packet_create(&allocChunkPacket, sizeof(ChunkPacket), ENET_PACKET_FLAG_RELIABLE);

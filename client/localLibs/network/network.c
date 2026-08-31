@@ -75,8 +75,16 @@ void *network(void *ClientStateX) {
                     ChunkPacket *chunkPacket = (ChunkPacket*)serverResponse.packet->data;
                     if (strncmp(chunkPacket->packet, "ALLOC|", 6) == 0) {
                         if (&chunkPacket->chunk != NULL) {
-                            clientState->clientWorld.chunks[chunkPacket->chunk.id] = chunkPacket->chunk;
-                            clientState->clientWorld.chunks[chunkPacket->chunk.id].blocks == calloc(1024, sizeof(Block));
+                            Chunk *chunk = &clientState->clientWorld.chunks[chunkPacket->chunk.id];
+                            chunk->id = chunkPacket->chunk.id;
+                            chunk->blocks_size = 0;
+                            chunk->blocks = calloc(1024, sizeof(Block));
+
+                            if (chunk->blocks == NULL) {
+                                printf("ERRO: não foi possível alocar os blocos do chunk %d\n", chunk->id);
+                                continue;
+                            }
+
                             clientState->clientWorld.size++;
                         }
                     }
@@ -86,6 +94,11 @@ void *network(void *ClientStateX) {
                     BlockPacket *blockPacket = (BlockPacket*)serverResponse.packet->data;
                     if (strncmp(blockPacket->packet, "ADD|", 4) == 0) {
                         if (&blockPacket->block != NULL) {
+                            if (clientState->clientWorld.chunks[blockPacket->block.chunkMom].blocks == NULL) {
+                                printf("ERRO: chunk %d não possui blocks!\n", blockPacket->block.chunkMom);
+                                continue;
+                            }
+                            
                             clientState->clientWorld.chunks[blockPacket->block.chunkMom].blocks[clientState->clientWorld.chunks[blockPacket->block.chunkMom].blocks_size] = blockPacket->block;
                             clientState->clientWorld.chunks[blockPacket->block.chunkMom].blocks_size++;
                         }
