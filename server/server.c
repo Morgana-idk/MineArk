@@ -68,7 +68,7 @@ int main() {
                                 if (name != NULL) {
                                     snprintf(newPlayer->name, sizeof(newPlayer->name), "%s", name);
                                 }
-                                clientResponse.peer->data = name;
+                                clientResponse.peer->data = newPlayer;
                                 playerList.player[playerList.size] = *newPlayer;
                                 playerList.size++;
 
@@ -105,12 +105,14 @@ int main() {
                     break;
                 }
                 case ENET_EVENT_TYPE_DISCONNECT:
-                    for (size_t i = 0; i < playerList.size; i++) {
-                        if (strcmp(playerList.player[i].name, clientResponse.peer->data) == 0) {
-                            playerList.player[i] = playerList.player[playerList.size - 1];
-                            playerList.player[playerList.size - 1].velocity = newVector3(-84848484, -848484, -8484);
-                            playerList.size--;
-                            break;
+                    Player *player = clientResponse.peer->data;
+                    if (player != NULL) {
+                        for (size_t i = 0; i < playerList.size; i++) {
+                            if (&playerList.player[i] == player) {
+                                playerList.player[i] = playerList.player[playerList.size - 1];
+                                playerList.size--;
+                                break;
+                            }
                         }
                     }
                     clientResponse.peer->data = NULL;
@@ -130,7 +132,6 @@ int main() {
             printf("\nNENHUM CLIENTE CONECTADO.\n\n");
         } else {
             for (size_t i = 0; i < playerList.size; i++) {
-                if (Vector3Equals(playerList.player[i].velocity, newVector3(-84848484, -848484, -8484)) > 0) continue;
                 printf("|--: %s\n", playerList.player[i].name);    
             }
         }
