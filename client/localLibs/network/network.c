@@ -74,34 +74,38 @@ void *network(void *ClientStateX) {
                 if (serverResponse.packet->dataLength == sizeof(ChunkPacket)) {
                     ChunkPacket *chunkPacket = (ChunkPacket*)serverResponse.packet->data;
                     if (strncmp(chunkPacket->packet, "ALLOC|", 6) == 0) {
-                        if (&chunkPacket->chunk != NULL) {
-                            Chunk *chunk = &clientState->clientWorld.chunks[chunkPacket->chunk.id];
-                            chunk->id = chunkPacket->chunk.id;
-                            chunk->blocks_size = 0;
-                            chunk->blocks = calloc(1024, sizeof(Block));
 
-                            if (chunk->blocks == NULL) {
-                                printf("ERRO: não foi possível alocar os blocos do chunk %d\n", chunk->id);
-                                continue;
-                            }
+                        int id = chunkPacket->chunk.id;
 
-                            clientState->clientWorld.size++;
+                        if (id < 0 || id >= 1024) {
+                            printf("ERRO: ID de chunk inválido: %d\n", id);
+                            continue;
                         }
+
+                        Chunk *chunk = &clientState->clientWorld.chunks[id];
+                        chunk->id = id;
+                        chunk->blocks_size = 0;
+                        chunk->blocks = calloc(1024, sizeof(Block));
+
+                        if (chunk->blocks == NULL) {
+                            printf("ERRO: não foi possível alocar os blocos do chunk %d\n", chunk->id);
+                            continue;
+                        }
+
+                        clientState->clientWorld.size++;
                     }
                 }
 
                 if (serverResponse.packet->dataLength == sizeof(BlockPacket)) {
                     BlockPacket *blockPacket = (BlockPacket*)serverResponse.packet->data;
                     if (strncmp(blockPacket->packet, "ADD|", 4) == 0) {
-                        if (&blockPacket->block != NULL) {
-                            if (clientState->clientWorld.chunks[blockPacket->block.chunkMom].blocks == NULL) {
-                                printf("ERRO: chunk %d não possui blocks!\n", blockPacket->block.chunkMom);
-                                continue;
-                            }
-                            
-                            clientState->clientWorld.chunks[blockPacket->block.chunkMom].blocks[clientState->clientWorld.chunks[blockPacket->block.chunkMom].blocks_size] = blockPacket->block;
-                            clientState->clientWorld.chunks[blockPacket->block.chunkMom].blocks_size++;
+                        if (clientState->clientWorld.chunks[blockPacket->block.chunkMom].blocks == NULL) {
+                            printf("ERRO: chunk %d não possui blocks!\n", blockPacket->block.chunkMom);
+                            continue;
                         }
+
+                        clientState->clientWorld.chunks[blockPacket->block.chunkMom].blocks[clientState->clientWorld.chunks[blockPacket->block.chunkMom].blocks_size] = blockPacket->block;
+                        clientState->clientWorld.chunks[blockPacket->block.chunkMom].blocks_size++;
                     }
                 }
 
