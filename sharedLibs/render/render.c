@@ -26,7 +26,7 @@ void carregarRecursos() {
     Image atlasImagem = GenImageColor(TAMANHO_ATLAS, TAMANHO_ATLAS, BLANK);
 
     char *caminhoImagens[TEXTURAS_ATUAIS] = {
-        "../../assets/textures/blocks/grass.png"
+        "../assets/textures/blocks/grass.png"
     };
 
     int posX = 0, posY = 0;

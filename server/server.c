@@ -34,9 +34,7 @@ int main() {
     serverWorld.chunks = calloc(50, sizeof(Chunk));
     serverWorld.size = 0;
 
-    Chunk basicChunk = generateChunk(newVector3(0, 0, 0), serverWorld.size);
-    serverWorld.chunks[serverWorld.size] = basicChunk;
-    serverWorld.size++;
+    generateChunkGroups(&serverWorld, newVector3(0, 0, 0), 1);
 
     snprintf(ultimoLog, sizeof(ultimoLog), "Servidor criado com sucesso!");
 

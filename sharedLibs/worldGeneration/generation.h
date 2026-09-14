@@ -13,6 +13,7 @@ typedef struct {
     Block *blocks;
     int blocks_size;
     int id;
+    Vector3 chunkPos;
 } Chunk;
 
 typedef struct {
@@ -22,5 +23,7 @@ typedef struct {
 
 Block buildBlock(Vector3 position, Vector3 size, int type, int chunkMom);
 Chunk generateChunk(Vector3 position, int id);
+void generateChunkGroups(World *world, Vector3 center, int size);
+bool checkIfChunked(World *world, Vector3 pos);
 
 #endif
